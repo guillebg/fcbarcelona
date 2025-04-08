@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Inter } from 'next/font/google'
-import PhoneInput from '../../components/PhoneInput'
+import PhoneInput from '@/components/PhoneInput'
 
 const inter = Inter({
   subsets: ['latin'],

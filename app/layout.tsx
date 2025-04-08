@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { inter, geist } from './fonts'
+import { fontSans } from './fonts'
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${geist.variable}`}>
+    <html lang="es" className={fontSans.className}>
       <head>
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
