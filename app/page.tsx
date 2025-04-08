@@ -2,15 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useEffect, useRef } from "react"
-import { Playfair_Display, Inter } from 'next/font/google'
-
-const playfair = Playfair_Display({ 
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500'],
-  style: ['normal'],
-})
+import { Inter } from 'next/font/google'
+import { useState } from 'react'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -18,427 +11,378 @@ const inter = Inter({
 })
 
 export default function Page() {
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [formPosition, setFormPosition] = useState('')
 
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
-        }
-      });
-    }, {
-      threshold: 0.1,
-      rootMargin: '50px'
-    });
-
-    document.querySelectorAll('.scroll-animation').forEach((element) => {
-      observerRef.current?.observe(element);
-    });
-
-    return () => observerRef.current?.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const loadTally = () => {
-      const existingScript = document.querySelector('script[src="https://tally.so/widgets/embed.js"]');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = "https://tally.so/widgets/embed.js";
-        script.async = true;
-        script.onload = () => {
-          // @ts-ignore
-          if (window.Tally) {
-            // @ts-ignore
-            window.Tally.loadEmbeds();
-          }
-        };
-        document.body.appendChild(script);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (email && name && phone) {
+      // Guardar los datos en localStorage
+      const savedWaitlist = localStorage.getItem('waitlist')
+      const waitlist = savedWaitlist ? JSON.parse(savedWaitlist) : []
+      
+      const newEntry = {
+        email: email,
+        name: name,
+        phone: phone,
+        timestamp: new Date().toLocaleString()
       }
-    };
+      
+      waitlist.push(newEntry)
+      localStorage.setItem('waitlist', JSON.stringify(waitlist))
+      
+      setEmail('')
+      setName('')
+      setPhone('')
+      setShowSuccess(true)
+      setShowForm(false)
+      setTimeout(() => setShowSuccess(false), 3000)
+    }
+  }
 
-    loadTally();
-  }, []);
+  const openForm = (position: string) => {
+    setFormPosition(position)
+    setShowForm(true)
+  }
 
   return (
-    <div className={`flex flex-col min-h-screen bg-black text-foreground bg-dotted-grid ${inter.className}`}>
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes shimmer {
-          0% { background-position: 0% 0; }
-          100% { background-position: 200% 0; }
-        }
-
-        .fade-in {
-          animation: fadeIn 0.8s ease-out forwards;
-          opacity: 0;
-        }
-
-        .delay-1 { animation-delay: 0.2s; }
-        .delay-2 { animation-delay: 0.4s; }
-        .delay-3 { animation-delay: 0.6s; }
-        
-        .glimmer-card {
-          position: relative;
-          background: rgb(23, 23, 23);
-          border-radius: 12px;
-          overflow: hidden;
-        }
-        
-        .glimmer-card::before {
-          content: '';
-          position: absolute;
-          inset: -1px;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(236, 72, 153, 0.03),
-            rgba(236, 72, 153, 0.06),
-            rgba(236, 72, 153, 0.03),
-            transparent
-          );
-          background-size: 200% 100%;
-          animation: shimmer 8s ease-in-out infinite;
-          pointer-events: none;
-        }
-
-        .glimmer-pill {
-          position: relative;
-          background: rgb(23, 23, 23);
-          border-radius: 9999px;
-          overflow: hidden;
-        }
-        
-        .glimmer-pill::before {
-          content: '';
-          position: absolute;
-          inset: -1px;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(236, 72, 153, 0.03),
-            rgba(236, 72, 153, 0.06),
-            rgba(236, 72, 153, 0.03),
-            transparent
-          );
-          background-size: 200% 100%;
-          animation: shimmer 8s ease-in-out infinite;
-          pointer-events: none;
-        }
-
-        .hero-glow {
-          position: absolute;
-          top: 85%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 140%;
-          height: 600px;
-          background: radial-gradient(
-            circle at center,
-            rgba(255, 255, 255, 0.08) 0%,
-            rgba(255, 255, 255, 0.03) 35%,
-            transparent 70%
-          );
-          pointer-events: none;
-          z-index: 0;
-          filter: blur(50px);
-        }
-
-        .scroll-animation {
-          opacity: 0;
-          transform: translateY(20px);
-          transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .scroll-animation.animate-in {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        .scroll-delay-1 { transition-delay: 0.1s; }
-        .scroll-delay-2 { transition-delay: 0.2s; }
-        .scroll-delay-3 { transition-delay: 0.3s; }
-      `}</style>
-
+    <div className={`flex flex-col min-h-screen text-white ${inter.className}`}>
       {/* Navigation */}
-      <header className="flex items-center justify-between py-4 px-6 border-b border-neutral-800/50">
-        <Link href="/" className={`text-2xl md:text-3xl font-medium ${playfair.className}`}>
-          VibeDev.ai
+      <header className="flex items-center justify-between py-6 px-8 max-w-7xl mx-auto w-full">
+        <Link href="/" className="text-2xl font-bold text-blue-300">
+          MailSense
         </Link>
-        <nav className="flex items-center gap-4">
-          <Button 
-            size="sm"
-            onClick={() => {
-              document.getElementById('early-access-form')?.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'center'
-              });
-            }}
-          >
-            Sign Up
+        <nav className="flex items-center gap-8">
+          <Link href="#features" className="text-gray-300 hover:text-white">Features</Link>
+          <Link href="#faq" className="text-gray-300 hover:text-white">FAQ</Link>
+          <Button onClick={() => openForm('nav')} className="bg-blue-600 hover:bg-blue-700 text-white">
+            Join Waitlist
           </Button>
         </nav>
       </header>
 
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="py-20 px-6 relative">
-          <div className="hero-glow" />
-          <div className="max-w-[1200px] mx-auto text-center relative z-10">
-            {/* Logo Placeholder */}
-            <div className="mb-4">
-              <img 
-                src="/images/idevibelogo.png" 
-                alt="VibeDev Logo" 
-                className="w-36 h-36 mx-auto object-contain"
-              />
+        <section className="py-20 px-8">
+          <div className="max-w-7xl mx-auto text-center">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                <span className="text-white">Transform Your Inbox into a</span><br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Productivity Engine</span>
+              </h1>
+              <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+                We analyze your emails 24/7 to prioritize what matters, automate repetitive tasks, and help you respond faster with AI.
+              </p>
             </div>
-            <div className="inline-flex items-center px-6 py-2 text-base font-medium text-purple-400 mb-8 glimmer-pill fade-in bg-purple-500/10 border border-purple-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-              <span className={playfair.className}>A Software Composer app</span>
+            <Button onClick={() => openForm('hero')} className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6">
+              Join Waitlist
+            </Button>
+            {showForm && formPosition === 'hero' && (
+              <div className="mt-6 p-6 bg-gray-900/50 rounded-lg max-w-md mx-auto">
+                <h3 className="text-xl font-semibold mb-4">Join our waitlist</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+                      Full name
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      placeholder="Your full name"
+                      className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="Your email address"
+                      className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
+                      Phone number
+                    </label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      placeholder="Your phone number"
+                      className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                      Submit
+                    </Button>
+                    <Button type="button" onClick={() => setShowForm(false)} variant="outline" className="text-white border-white hover:bg-white/10">
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+            {showSuccess && formPosition === 'hero' && (
+              <div className="mt-4 p-4 rounded bg-green-600/20 text-center">
+                Thank you for joining our waitlist!
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Problem Section */}
+        <section className="py-20 px-8 bg-gray-900/30">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">
+              Tired of Getting Lost in Your Email?
+            </h2>
+            <div className="grid md:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold mb-4">The Traditional Way</h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-400">✖</span>
+                    <span className="text-gray-300">Wasting 2+ hours daily managing emails manually</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-400">✖</span>
+                    <span className="text-gray-300">Important emails buried in spam and newsletters</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-400">✖</span>
+                    <span className="text-gray-300">Writing repetitive responses over and over</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-400">✖</span>
+                    <span className="text-gray-300">Stress from keeping inbox under control</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold mb-4">With MailSense</h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">AI that prioritizes and categorizes your emails automatically</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">Smart responses personalized to your style</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">Automation of repetitive tasks and classification</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">Trend analysis and productivity suggestions</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <h1 className={`text-4xl md:text-5xl font-medium mb-6 tracking-tight fade-in delay-1 ${playfair.className}`}>
-              The Easiest Way To<br />Vibe Code With Cursor
-            </h1>
-            <p className="text-lg text-neutral-400 mb-8 fade-in delay-2">
-              VibeDev is your IDE for Vibe Coding
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="py-20 px-8">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-xl font-semibold mb-3">
+                  How does MailSense work?
+                </h3>
+                <p className="text-gray-300">
+                  MailSense uses advanced AI to analyze your email patterns, prioritize important messages, and suggest personalized responses based on your communication style.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-3">
+                  Is MailSense safe to use?
+                </h3>
+                <p className="text-gray-300">
+                  Security is our top priority. We use military-grade encryption and never store sensitive content from your emails.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-3">
+                  Which email clients are supported?
+                </h3>
+                <p className="text-gray-300">
+                  MailSense is compatible with Gmail
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 px-8 bg-blue-900/30 backdrop-blur-sm">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-6">
+              Let AI Handle Your Email
+            </h2>
+            <p className="text-xl mb-8 text-gray-300">
+              Save up to 2 hours daily and keep your inbox under control
             </p>
-            <div className="fade-in delay-3">
-              <Button 
-                size="lg" 
-                className="rounded-full"
-                onClick={() => {
-                  document.getElementById('early-access-form')?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'center'
-                  });
-                }}
-              >
-                Get Early Access
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Demo Section */}
-        <section className="py-20 px-6">
-          <div className="max-w-[1200px] mx-auto scroll-animation">
-            <div className="glimmer-card">
-              <div className="bg-neutral-900">
-                <div className="flex flex-col md:flex-row h-auto md:h-[600px]">
-                  {/* Input Section */}
-                  <div className="w-full md:w-1/2 md:border-r border-neutral-800 p-6 flex flex-col">
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">What should Cursor do?</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Describe what you want to build..."
-                          className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/30"
-                        />
-                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-green-500/10 rounded-lg text-green-400 hover:bg-green-500/20 transition-colors">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M22 2L11 13"/>
-                            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-sm font-medium text-neutral-400 mb-4">Start from</h3>
-                      <div className="grid grid-cols-1 gap-3">
-                        {[...Array(2)].map((_, i) => (
-                          <button
-                            key={i}
-                            className="flex items-center gap-3 p-4 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors text-left group"
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-green-500/10 text-green-400 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                              </svg>
-                            </div>
-                            <span className="text-sm font-medium">Template {i + 1}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+            <Button onClick={() => openForm('cta')} className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6">
+              Join Waitlist ►
+            </Button>
+            {showForm && formPosition === 'cta' && (
+              <div className="mt-6 p-6 bg-gray-900/50 rounded-lg max-w-md mx-auto">
+                <h3 className="text-xl font-semibold mb-4">Join our waitlist</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="name-cta" className="block text-sm font-medium text-gray-300 mb-1">
+                      Full name
+                    </label>
+                    <input
+                      id="name-cta"
+                      type="text"
+                      placeholder="Your full name"
+                      className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
                   </div>
-
-                  {/* Cursor Composer Section - Hidden on mobile */}
-                  <div className="hidden md:flex md:w-1/2 md:flex-col">
-                    <div className="p-4 border-b border-neutral-800">
-                      <h2 className="text-lg font-medium">Cursor Composer</h2>
-                    </div>
-                    <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                      {/* First Message */}
-                      <div className="flex justify-end">
-                        <div className="max-w-[85%] p-4 bg-neutral-800 rounded-lg">
-                          <p className="text-sm text-neutral-300 text-right">
-                            Sure, I can make those changes for you.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Status Updates */}
-                      <div className="flex flex-col gap-2">
-                        <div className="self-end max-w-[85%] p-3 bg-neutral-800 rounded-lg">
-                          <p className="text-sm font-medium text-green-400 text-right">File generated</p>
-                        </div>
-                        <div className="self-end max-w-[85%] p-3 bg-neutral-800 rounded-lg">
-                          <p className="text-sm font-medium text-green-400 text-right">File generated</p>
-                        </div>
-                        <div className="self-end max-w-[85%] p-3 bg-neutral-800 rounded-lg">
-                          <p className="text-sm font-medium text-green-400 text-right">File generated</p>
-                        </div>
-                        <div className="self-end max-w-[85%] p-3 bg-neutral-800 rounded-lg">
-                          <p className="text-sm font-medium text-green-400 text-right">File generated</p>
-                        </div>
-                      </div>
-
-                      {/* Completion Message */}
-                      <div className="flex justify-end">
-                        <div className="max-w-[85%] p-4 bg-neutral-800 rounded-lg">
-                          <p className="text-sm text-neutral-300 text-right">
-                            I&apos;ve successfully created your app
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 border-t border-neutral-800">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Type your message..."
-                          className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/30"
-                        />
-                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-green-500/10 rounded-lg text-green-400 hover:bg-green-500/20 transition-colors">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M22 2L11 13"/>
-                            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+                  <div>
+                    <label htmlFor="email-cta" className="block text-sm font-medium text-gray-300 mb-1">
+                      Email address
+                    </label>
+                    <input
+                      id="email-cta"
+                      type="email"
+                      placeholder="Your email address"
+                      className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
                   </div>
-                </div>
+                  <div>
+                    <label htmlFor="phone-cta" className="block text-sm font-medium text-gray-300 mb-1">
+                      Phone number
+                    </label>
+                    <input
+                      id="phone-cta"
+                      type="tel"
+                      placeholder="Your phone number"
+                      className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                      Submit
+                    </Button>
+                    <Button type="button" onClick={() => setShowForm(false)} variant="outline" className="text-white border-white hover:bg-white/10">
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-20 px-6 border-t border-neutral-800">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="text-center mb-16 scroll-animation">
-              <h2 className={`text-3xl md:text-4xl font-medium mb-3 ${playfair.className}`}>Create in Minutes, Not Months</h2>
-              <p className="text-neutral-400 text-lg">Transform your ideas into reality with three simple prompts.</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6 relative">
-              <div className="bg-neutral-900 p-8 rounded-xl border border-neutral-800/80 hover:border-green-500/20 transition-colors scroll-animation scroll-delay-1 group">
-                <div className="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                </div>
-                <h3 className={`text-xl font-medium mb-3 group-hover:text-green-400 transition-colors ${playfair.className}`}>Download Template</h3>
-                <p className="text-neutral-400 leading-relaxed">
-                  Get started with our production-ready template. It&apos;s packed with everything you need to build a stunning landing page.
-                </p>
+            )}
+            {showSuccess && formPosition === 'cta' && (
+              <div className="mt-4 p-4 rounded bg-green-600/20 text-center">
+                Thank you for joining our waitlist!
               </div>
-
-              <div className="bg-neutral-900 p-8 rounded-xl border border-neutral-800/80 hover:border-green-500/20 transition-colors scroll-animation scroll-delay-2 group">
-                <div className="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4z"/>
-                  </svg>
-                </div>
-                <h3 className={`text-xl font-medium mb-3 group-hover:text-green-400 transition-colors ${playfair.className}`}>Tell VibeDev What You Want</h3>
-                <p className="text-neutral-400 leading-relaxed">
-                  Describe your vision in plain English. VibeDev will control Cursor to transform your words into a beautiful, functional design.
-                </p>
-              </div>
-
-              <div className="bg-neutral-900 p-8 rounded-xl border border-neutral-800/80 hover:border-green-500/20 transition-colors scroll-animation scroll-delay-3 group">
-                <div className="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                  </svg>
-                </div>
-                <h3 className={`text-xl font-medium mb-3 group-hover:text-green-400 transition-colors ${playfair.className}`}>Deploy to Vercel</h3>
-                <p className="text-neutral-400 leading-relaxed">
-                  Deploy your landing page to Vercel with one click. Share your creation with the world instantly on a global edge network.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Early Access Form Section */}
-        <section id="early-access-form" className="py-20 px-6 border-t border-neutral-800 bg-neutral-900/80">
-          <div className="max-w-[1200px] mx-auto text-center">
-            <div className="scroll-animation">
-              <h2 className={`text-3xl md:text-4xl font-medium mb-4 ${playfair.className}`}>Get Early Access</h2>
-              <p className="text-neutral-400 mb-12">Be the first to experience the future of coding.</p>
-            </div>
-            <div className="max-w-[400px] mx-auto scroll-animation">
-              <iframe 
-                data-tally-src="https://tally.so/embed/wM756p?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" 
-                loading="lazy" 
-                width="100%" 
-                height="230" 
-                frameBorder="0" 
-                title="Sign Up for Early Access"
-              ></iframe>
-            </div>
+            )}
           </div>
         </section>
       </main>
 
-      <footer className="py-8 px-6 border-t border-neutral-800/50 scroll-animation">
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
-          <div className="text-sm text-neutral-400">
-            © 2024 Software Composer LP. All rights reserved.
-          </div>
-          <div className="flex items-center gap-6">
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-              <span className="sr-only">Twitter</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
-              </svg>
-            </a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-              <span className="sr-only">GitHub</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-              </svg>
-            </a>
-            <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-              <span className="sr-only">Discord</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6h0a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3v0"/>
-                <path d="M6 18v-7a3 3 0 0 1 3-3h7"/>
-                <circle cx="8" cy="12" r="1"/>
-                <circle cx="16" cy="12" r="1"/>
-              </svg>
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-              <span className="sr-only">LinkedIn</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                <rect x="2" y="9" width="4" height="12"/>
-                <circle cx="4" cy="4" r="2"/>
-              </svg>
-            </a>
+      <footer className="py-8 px-8 border-t border-gray-800">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <p className="text-gray-400">© 2024 MailSense. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="/terms" className="text-gray-400 hover:text-white">Terms</Link>
+            <Link href="/privacy" className="text-gray-400 hover:text-white">Privacy</Link>
+            <Link href="/admin/waitlist" className="text-gray-400 hover:text-white">Admin</Link>
           </div>
         </div>
       </footer>
+
+      {/* Modal para el botón de navegación */}
+      {showForm && formPosition === 'nav' && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-8 rounded-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Join our waitlist</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="name-nav" className="block text-sm font-medium text-gray-300 mb-1">
+                  Full name
+                </label>
+                <input
+                  id="name-nav"
+                  type="text"
+                  placeholder="Your full name"
+                  className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="email-nav" className="block text-sm font-medium text-gray-300 mb-1">
+                  Email address
+                </label>
+                <input
+                  id="email-nav"
+                  type="email"
+                  placeholder="Your email address"
+                  className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="phone-nav" className="block text-sm font-medium text-gray-300 mb-1">
+                  Phone number
+                </label>
+                <input
+                  id="phone-nav"
+                  type="tel"
+                  placeholder="Your phone number"
+                  className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  Submit
+                </Button>
+                <Button type="button" onClick={() => setShowForm(false)} variant="outline" className="text-white border-white hover:bg-white/10">
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

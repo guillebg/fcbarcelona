@@ -1,47 +1,30 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { inter, geist } from './fonts'
 import "./globals.css";
 
-const playfair = Playfair_Display({ 
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500'],
-  style: ['normal'],
-})
-
-const inter = Inter({ 
-  subsets: ['latin'],
-  display: 'swap',
-})
-
 export const metadata: Metadata = {
-  title: "vibedev.ai",
-  description: "Experience the new way of coding with vibedev.ai. Transform your development workflow and vibe with your code like never before.",
+  title: "MailSense - Transform Your Inbox into a Productivity Engine",
+  description: "We analyze your emails 24/7 to prioritize what matters, automate repetitive tasks, and help you respond faster with AI.",
   icons: {
     icon: [
       {
-        url: "/images/idevibelogo.png",
-        type: "image/png",
-        sizes: "32x32"
-      },
-      {
-        url: "/images/idevibelogo.png",
-        type: "image/png",
-        sizes: "16x16"
+        url: "/favicon.ico",
+        type: "image/x-icon",
+        sizes: "any"
       }
     ],
     apple: [
       {
-        url: "/images/idevibelogo.png",
-        type: "image/png",
+        url: "/favicon.ico",
+        type: "image/x-icon",
         sizes: "180x180"
       }
     ],
-    shortcut: [{ url: "/images/idevibelogo.png" }],
+    shortcut: [{ url: "/favicon.ico" }],
     other: [
       {
         rel: "icon",
-        url: "/images/idevibelogo.png",
+        url: "/favicon.ico",
       },
     ],
   },
@@ -58,14 +41,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`${inter.variable} ${geist.variable}`}>
       <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="/images/idevibelogo.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/images/idevibelogo.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/images/idevibelogo.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={`${inter.className} bg-black bg-dotted-grid`}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
